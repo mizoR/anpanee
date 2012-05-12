@@ -2,3 +2,6 @@
 /tmp
 /db/*.sqlite3
 /npm-debug.log
+/output
+/lib/*.js
+/lib/**/*.js

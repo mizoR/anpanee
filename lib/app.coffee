@@ -1,6 +1,7 @@
 #!/bin/env coffee
 
 express = require 'express'
+async = require 'async'
 fs = require 'fs'
 crypto = require 'crypto'
 config = require 'config'
@@ -14,30 +15,36 @@ app.get '/', (req,res) ->
   res.send 'Hello World'
 
 app.post '/ticket', (req, res) ->
-  parser = new UploadedFileParser
-  parser.success = (name, binary) ->
-    date = new Date
-    rand = Math.random().toString()
-    ticketCode = crypto.createHash('md5').update(date + rand).digest('hex')
-    hashedFileName = crypto.createHash('md5').update(ticketCode + rand).digest('hex')
-    fs.writeFileSync('./tmp/src/' + hashedFileName + '.mp4', binary, 'binary')
-    convertInformation = ConvertInformation.build
-      status: convertStatus.waiting
-      ticketCode: ticketCode
-      fileName: name
-      srcFile:  hashedFileName + '.mp4'
-      dstFile:  hashedFileName + '.m4a'
-      pubFile:  hashedFileName + '.m4a'
-    result = convertInformation.save()
-    result.success ->
-      console.log('Success')
-      res.send({status:'OK', ticketCode: ticketCode})
-    result.error ->
-      console.log(result)
-      res.send({status:'NG'})
-  parser.error = () ->
-    res.send({status:'NG'})
-  parser.parse req
+  async.waterfall [
+    (callback) ->
+      parser = new UploadedFileParser
+      parser.parse req, (name, binary) ->
+        callback(null, name, binary)
+        return
+      return
+    , (name, binary, callback) ->
+      date = new Date
+      rand = Math.random().toString()
+      ticketCode = crypto.createHash('md5').update(date + rand).digest('hex')
+      hashedFileName = crypto.createHash('md5').update(ticketCode + rand).digest('hex')
+      fs.writeFileSync('./tmp/src/' + hashedFileName + '.mp4', binary, 'binary')
+      convertInformation = ConvertInformation.build
+        status: convertStatus.waiting
+        ticketCode: ticketCode
+        fileName: name
+        srcFile:  hashedFileName + '.mp4'
+        dstFile:  hashedFileName + '.m4a'
+        pubFile:  hashedFileName + '.m4a'
+      convertInformation.save().success ->
+        console.log('Success')
+        res.send({status:'OK', ticketCode: ticketCode})
+        return
+      return
+  ], (err) ->
+    if error
+      console.log(error)
+    return
+  return
 
 app.get '/progress/:ticketCode', (req, res) ->
   console.log(req.params.ticketCode)

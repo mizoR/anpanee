@@ -1,10 +1,7 @@
 #!/bin/env coffee
 
 module.exports = class UploadedFileParser
-  success: null
-  error: null
-  parse:(req) ->
-    success = @success
+  parse:(req, success) ->
     error = @error
     headerFlag = true
     header = ''
