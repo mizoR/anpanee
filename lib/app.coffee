@@ -1,28 +1,13 @@
 #!/bin/env coffee
 
 express = require 'express'
-Sequelize = require 'sequelize'
 fs = require 'fs'
 crypto = require 'crypto'
 config = require 'config'
-databaseConfig = config.Database
 convertStatus = config.ConvertStatus
 
-sequelize = new Sequelize '', '', '',
-  dialect: databaseConfig.type
-  storage: databaseConfig.filePath
-
-ConvertInformation = sequelize.define 'ConvertInformation',
-  id: { type: Sequelize.INTEGER, allowNull: false, autoIncrement: true, defaultValue: 1 }
-  status: { type: Sequelize.STRING, allowNull: false }
-  ticketCode: { type: Sequelize.STRING, allowNull: false, unique: true }
-  fileName: { type: Sequelize.STRING, allowNull: false }
-  srcFile: { type: Sequelize.STRING, allowNull: true, unique: true }
-  dstFile: { type: Sequelize.STRING, allowNull: true, unique: true }
-  pubFile: { type: Sequelize.STRING, allowNull: true, unique: true }
-sequelize.sync()
-
 app = express.createServer()
+ConvertInformation = require './models/convert_information'
 
 app.get '/', (req,res) ->
   res.send 'Hello World'
@@ -70,6 +55,7 @@ app.post '/ticket', (req, res) ->
     result.success ->
       console.log('Success')
       res.send({status:'OK', ticketCode: ticketCode})
+      console.log('Start Convert ' + convertInformation.id)
     result.error ->
       console.log(result)
       res.send({status:'NG'})
