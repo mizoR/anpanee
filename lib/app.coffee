@@ -6,6 +6,7 @@ fs = require 'fs'
 crypto = require 'crypto'
 config = require 'config'
 databaseConfig = config.Database
+convertStatus = config.ConvertStatus
 
 sequelize = new Sequelize '', '', '',
   dialect: databaseConfig.type
@@ -59,7 +60,7 @@ app.post '/ticket', (req, res) ->
     pubFile = hashedFileName + '.m4a'
     fs.writeFileSync('./tmp/src/' + srcFile, body, 'binary')
     convertInformation = ConvertInformation.build
-      status: 'Progressing'
+      status: convertStatus.waiting
       ticketCode: ticketCode
       fileName: fileName
       srcFile:  srcFile
@@ -77,7 +78,7 @@ app.get '/progress/:ticketCode', (req, res) ->
   console.log(req.params.ticketCode)
   result = ConvertInformation.find({where: {ticketCode: req.params.ticketCode}})
   result.success (convertInformation) ->
-    json = { status: 'Progressing', percentage: 80 }
+    json = { status: convertInformation.status, percentage: 80 }
     res.send(json)
   result.error () ->
     json = { status: 'RecordNotFound' }
