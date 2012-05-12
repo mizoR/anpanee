@@ -29,8 +29,8 @@ app.post '/ticket', (req, res) ->
   header = ''
   body = ''
   fileName = ''
-  content_type = req.headers['content-type']
-  boundary = content_type.split('; ')[1].split('=')[1]
+  contentType = req.headers['content-type']
+  boundary = contentType.split('; ')[1].split('=')[1]
   req.on 'data', (raw) ->
     i = 0
     while i < raw.length
@@ -70,10 +70,15 @@ app.post '/ticket', (req, res) ->
       console.log(result)
       res.send({status:'NG'})
 
-app.get '/progress/:ticket_code', (req, res) ->
-  json = { status: 'Progressing', percentage: 80 }
-  json = { status: 'Completed', url:'http://example.com/oieafnboigwuior40f434rt3h53y.m4a' }
-  res.send(json)
+app.get '/progress/:ticketCode', (req, res) ->
+  console.log(req.params.ticketCode)
+  result = ConvertInformation.find({where: {ticketCode: req.params.ticketCode}})
+  result.success (convertInformation) ->
+    json = { status: 'Progressing', percentage: 80 }
+    res.send(json)
+  result.error () ->
+    json = { status: 'RecordNotFound' }
+    res.send(json)
 
 app.listen 3000
 
