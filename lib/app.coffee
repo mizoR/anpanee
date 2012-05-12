@@ -8,11 +8,19 @@ convertStatus = config.ConvertStatus
 
 app = express.createServer()
 ConvertInformation = require './models/convert_information'
+UploadedFileParser = require './libs/uploaded_file_parser'
 
 app.get '/', (req,res) ->
   res.send 'Hello World'
 
 app.post '/ticket', (req, res) ->
+  parser = new UploadedFileParser
+  parser.success = (name, binary) ->
+    console.log(name)
+    console.log(binary)
+  parser.error = () ->
+    res.send({status:'NG'})
+  parser.parse req
   headerFlag = true
   header = ''
   body = ''
