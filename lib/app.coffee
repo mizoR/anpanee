@@ -4,10 +4,12 @@ express = require 'express'
 Sequelize = require 'sequelize'
 fs = require 'fs'
 crypto = require 'crypto'
+config = require 'config'
+databaseConfig = config.Database
 
 sequelize = new Sequelize '', '', '',
-  dialect: 'sqlite'
-  storage: './db/development.sqlite3'
+  dialect: databaseConfig.type
+  storage: databaseConfig.filePath
 
 ConvertInformation = sequelize.define 'ConvertInformation',
   id: { type: Sequelize.INTEGER, allowNull: false, autoIncrement: true, defaultValue: 1 }
