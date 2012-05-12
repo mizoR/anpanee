@@ -16,57 +16,28 @@ app.get '/', (req,res) ->
 app.post '/ticket', (req, res) ->
   parser = new UploadedFileParser
   parser.success = (name, binary) ->
-    console.log(name)
-    console.log(binary)
-  parser.error = () ->
-    res.send({status:'NG'})
-  parser.parse req
-  headerFlag = true
-  header = ''
-  body = ''
-  fileName = ''
-  contentType = req.headers['content-type']
-  boundary = contentType.split('; ')[1].split('=')[1]
-  req.on 'data', (raw) ->
-    i = 0
-    # for header
-    while (i < raw.length and headerFlag)
-      chars = raw.slice(i, i+4).toString()
-      if chars == '\r\n\r\n'
-        headerFlag = false
-        header = raw.slice(0, i+4).toString()
-        fileName = (/filename="(.*)"/m).exec(header)[1]
-        i += 4
-      else
-        i += 1
-    # for body
-    while i < raw.length
-      body += raw.toString('binary', i, raw.length)
-      i = raw.length
-  req.on 'end', () ->
-    body = body.slice(0, body.length - (boundary.length + 8))
-    key = ((new Date).toString() + (Math.random()).toString())
-    ticketCode = crypto.createHash('md5').update(key).digest('hex')
-    hashedFileName = crypto.createHash('md5').update(key + fileName).digest('hex')
-    srcFile = hashedFileName + '.mp4'
-    dstFile = hashedFileName + '.m4a'
-    pubFile = hashedFileName + '.m4a'
-    fs.writeFileSync('./tmp/src/' + srcFile, body, 'binary')
+    date = new Date
+    rand = Math.random().toString()
+    ticketCode = crypto.createHash('md5').update(date + rand).digest('hex')
+    hashedFileName = crypto.createHash('md5').update(ticketCode + rand).digest('hex')
+    fs.writeFileSync('./tmp/src/' + hashedFileName + '.mp4', binary, 'binary')
     convertInformation = ConvertInformation.build
       status: convertStatus.waiting
       ticketCode: ticketCode
-      fileName: fileName
-      srcFile:  srcFile
-      dstFile:  dstFile
-      pubFile:  pubFile
+      fileName: name
+      srcFile:  hashedFileName + '.mp4'
+      dstFile:  hashedFileName + '.m4a'
+      pubFile:  hashedFileName + '.m4a'
     result = convertInformation.save()
     result.success ->
       console.log('Success')
       res.send({status:'OK', ticketCode: ticketCode})
-      console.log('Start Convert ' + convertInformation.id)
     result.error ->
       console.log(result)
       res.send({status:'NG'})
+  parser.error = () ->
+    res.send({status:'NG'})
+  parser.parse req
 
 app.get '/progress/:ticketCode', (req, res) ->
   console.log(req.params.ticketCode)
