@@ -27,19 +27,21 @@ app.post '/ticket', (req, res) ->
       rand = Math.random().toString()
       ticketCode = crypto.createHash('md5').update(date + rand).digest('hex')
       hashedFileName = crypto.createHash('md5').update(ticketCode + rand).digest('hex')
-      fs.writeFileSync('./tmp/src/' + hashedFileName + '.mp4', binary, 'binary')
-      convertInformation = ConvertInformation.build
-        status: convertStatus.waiting
-        ticketCode: ticketCode
-        fileName: name
-        srcFile:  hashedFileName + '.mp4'
-        dstFile:  hashedFileName + '.m4a'
-        pubFile:  hashedFileName + '.m4a'
-      convertInformation.save().success ->
-        console.log('Success')
-        res.send({status:'OK', ticketCode: ticketCode})
+      fs.writeFile('./tmp/src/' + hashedFileName + '.mp4', binary, 'binary', (err) ->
+        callback(err) if err
+        convertInformation = ConvertInformation.build
+          status: convertStatus.waiting
+          ticketCode: ticketCode
+          fileName: name
+          srcFile:  hashedFileName + '.mp4'
+          dstFile:  hashedFileName + '.m4a'
+          pubFile:  hashedFileName + '.m4a'
+        convertInformation.save().success ->
+          console.log('Success')
+          res.send({status:'OK', ticketCode: ticketCode})
+          return
         return
-      return
+      )
   ], (err) ->
     console.log(err) if err
     return
