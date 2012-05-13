@@ -41,8 +41,7 @@ app.post '/ticket', (req, res) ->
         return
       return
   ], (err) ->
-    if error
-      console.log(error)
+    console.log(err) if err
     return
   return
 
