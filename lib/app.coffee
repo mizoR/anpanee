@@ -3,7 +3,7 @@
 express = require 'express'
 async = require 'async'
 fs = require 'fs'
-crypto = require 'crypto'
+md5 = require './libs/md5'
 config = require 'config'
 convertStatus = config.ConvertStatus
 
@@ -25,23 +25,29 @@ app.post '/ticket', (req, res) ->
     , (name, binary, callback) ->
       date = new Date
       rand = Math.random().toString()
-      ticketCode = crypto.createHash('md5').update(date + rand).digest('hex')
-      hashedFileName = crypto.createHash('md5').update(ticketCode + rand).digest('hex')
+      ticketCode = md5.digestHex(date + rand)
+      hashedFileName = md5.digestHex(ticketCode + rand)
       fs.writeFile('./tmp/src/' + hashedFileName + '.mp4', binary, 'binary', (err) ->
         callback(err) if err
-        convertInformation = ConvertInformation.build
-          status: convertStatus.waiting
-          ticketCode: ticketCode
-          fileName: name
-          srcFile:  hashedFileName + '.mp4'
-          dstFile:  hashedFileName + '.m4a'
-          pubFile:  hashedFileName + '.m4a'
-        convertInformation.save().success ->
-          console.log('Success')
-          res.send({status:'OK', ticketCode: ticketCode})
-          return
-        return
+        callback(null, ticketCode, name, hashedFileName)
       )
+    , (ticketCode, fileName, hashedFileName, callback) ->
+      console.log(ticketCode)
+      console.log(hashedFileName)
+      convertInformation = ConvertInformation.build
+        status: convertStatus.waiting
+        ticketCode: ticketCode
+        fileName: fileName
+        srcFile:  hashedFileName + '.mp4'
+        dstFile:  hashedFileName + '.m4a'
+        pubFile:  hashedFileName + '.m4a'
+      console.log(ticketCode)
+      console.log(hashedFileName)
+      convertInformation.save().success ->
+        console.log('Success')
+        res.send({status:'OK', ticketCode: ticketCode})
+        return
+      return
   ], (err) ->
     console.log(err) if err
     return
