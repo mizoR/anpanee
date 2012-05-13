@@ -32,8 +32,6 @@ app.post '/ticket', (req, res) ->
         callback(null, ticketCode, name, hashedFileName)
       )
     , (ticketCode, fileName, hashedFileName, callback) ->
-      console.log(ticketCode)
-      console.log(hashedFileName)
       convertInformation = ConvertInformation.build
         status: convertStatus.waiting
         ticketCode: ticketCode
@@ -41,10 +39,7 @@ app.post '/ticket', (req, res) ->
         srcFile:  hashedFileName + '.mp4'
         dstFile:  hashedFileName + '.m4a'
         pubFile:  hashedFileName + '.m4a'
-      console.log(ticketCode)
-      console.log(hashedFileName)
       convertInformation.save().success ->
-        console.log('Success')
         res.send({status:'OK', ticketCode: ticketCode})
         return
       return
@@ -54,7 +49,6 @@ app.post '/ticket', (req, res) ->
   return
 
 app.get '/progress/:ticketCode', (req, res) ->
-  console.log(req.params.ticketCode)
   result = ConvertInformation.find({where: {ticketCode: req.params.ticketCode}})
   result.success (convertInformation) ->
     json = { status: convertInformation.status, percentage: 80 }
