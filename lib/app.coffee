@@ -47,7 +47,11 @@ app.post '/ticket', (req, res) ->
         pubFile:  pubFilePath
       convertInformation.save().success ->
         res.send({status:'OK', ticketCode: ticketCode})
+        callback(null, convertInformation)
         return
+      return
+    , (convertInformation) ->
+      console.log('start file encoding..')
       return
   ], (err) ->
     console.log(err) if err
