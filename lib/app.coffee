@@ -3,6 +3,7 @@
 express = require 'express'
 async = require 'async'
 fs = require 'fs'
+ffmpeg = require 'basicFFmpeg'
 md5 = require './libs/md5'
 util = require 'util'
 config = require 'config'
@@ -50,8 +51,30 @@ app.post '/ticket', (req, res) ->
         callback(null, convertInformation)
         return
       return
-    , (convertInformation) ->
+    , (convInfo, callback) ->
       console.log('start file encoding..')
+      inputStream = fs.createReadStream(convInfo.srcFile)
+      outputStream = fs.createWriteStream(convInfo.dstFile)
+      processor = ffmpeg.createProcessor({
+        inputStream: inputStream,
+        outputStream: outputStream,
+        emitInputAudioCodecEvent: true,
+        emitInfoEvent: true,
+        emitProgressEvent: true,
+        niceness: 10,
+        timeout: 10 * 60 * 1000,
+        arguments: { '-vn': null, '-ar': 44100, '-ab': '128k', '-acodec': 'libfaac', '-f': 'adts' }
+      })
+      processor.on 'success', (retcode, signal) ->
+        console.log('encoding success')
+      processor.on 'failure', (retcode, signal) ->
+        callback('process failure')
+      processor.on 'progress', (bytes) ->
+        console.log('process event, bytes: ' + bytes);
+      processor.on 'timeout', (processor) ->
+        processor.terminate();
+        callback('timeout error');
+      processor.execute()
       return
   ], (err) ->
     console.log(err) if err
