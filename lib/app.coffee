@@ -4,8 +4,10 @@ express = require 'express'
 async = require 'async'
 fs = require 'fs'
 md5 = require './libs/md5'
+util = require 'util'
 config = require 'config'
 convertStatus = config.ConvertStatus
+filePath = config.FilePath
 
 app = express.createServer()
 ConvertInformation = require './models/convert_information'
@@ -27,18 +29,22 @@ app.post '/ticket', (req, res) ->
       rand = Math.random().toString()
       ticketCode = md5.digestHex(date + rand)
       hashedFileName = md5.digestHex(ticketCode + rand)
-      fs.writeFile('./tmp/src/' + hashedFileName + '.mp4', binary, 'binary', (err) ->
+      srcFilePath = util.format(filePath.src.mp4, hashedFileName)
+      fs.writeFile(srcFilePath, binary, 'binary', (err) ->
         callback(err) if err
         callback(null, ticketCode, name, hashedFileName)
       )
     , (ticketCode, fileName, hashedFileName, callback) ->
+      srcFilePath = util.format(filePath.src.mp4, hashedFileName)
+      dstFilePath = util.format(filePath.dst.m4a, hashedFileName)
+      pubFilePath = util.format(filePath.pub.m4a, hashedFileName)
       convertInformation = ConvertInformation.build
         status: convertStatus.waiting
         ticketCode: ticketCode
         fileName: fileName
-        srcFile:  hashedFileName + '.mp4'
-        dstFile:  hashedFileName + '.m4a'
-        pubFile:  hashedFileName + '.m4a'
+        srcFile:  srcFilePath
+        dstFile:  dstFilePath
+        pubFile:  pubFilePath
       convertInformation.save().success ->
         res.send({status:'OK', ticketCode: ticketCode})
         return
