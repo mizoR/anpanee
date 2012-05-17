@@ -30,15 +30,15 @@ app.post '/ticket', (req, res) ->
       rand = Math.random().toString()
       ticketCode = md5.digestHex(date + rand)
       hashedFileName = md5.digestHex(ticketCode + rand)
-      srcFilePath = util.format(filePath.src.mp4, hashedFileName)
+      srcFilePath = util.format(filePath.src, hashedFileName)
       fs.writeFile(srcFilePath, binary, 'binary', (err) ->
         callback(err) if err
         callback(null, ticketCode, name, hashedFileName)
       )
     , (ticketCode, fileName, hashedFileName, callback) ->
-      srcFilePath = util.format(filePath.src.mp4, hashedFileName)
-      dstFilePath = util.format(filePath.dst.m4a, hashedFileName)
-      pubFilePath = util.format(filePath.pub.m4a, hashedFileName)
+      srcFilePath = util.format(filePath.src, hashedFileName)
+      dstFilePath = util.format(filePath.dst, hashedFileName)
+      pubFilePath = util.format(filePath.pub, hashedFileName)
       convertInformation = ConvertInformation.build
         status: convertStatus.waiting
         ticketCode: ticketCode
