@@ -4,7 +4,7 @@ module.exports =
     type: 'sqlite'
   ConvertStatus:
     waiting:     'Waiting'
-    progressing: 'Progressing'
+    processing:  'Processing'
     finished:    'Finished'
   FilePath:
     src: './tmp/src/%s.mp4'

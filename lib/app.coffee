@@ -52,7 +52,10 @@ app.post '/ticket', (req, res) ->
         return
       return
     , (info, callback) ->
-      console.log('start file encoding..')
+      info.status = convertStatus.processing
+      info.save().success ->
+        callback(null, info)
+    , (info, callback) ->
       inputStream = fs.createReadStream(info.srcFile)
       outputStream = fs.createWriteStream(info.dstFile)
       processor = ffmpeg.createProcessor({
@@ -66,16 +69,18 @@ app.post '/ticket', (req, res) ->
         arguments: { '-vn': null, '-ar': 44100, '-ab': '128k', '-acodec': 'libfaac', '-f': 'adts' }
       })
       processor.on 'success', (retcode, signal) ->
-        console.log('encoding success')
+        callback(null, info)
       processor.on 'failure', (retcode, signal) ->
         callback('process failure')
-      processor.on 'progress', (bytes) ->
-        console.log('process event, bytes: ' + bytes);
       processor.on 'timeout', (processor) ->
         processor.terminate();
         callback('timeout error');
       processor.execute()
       return
+    , (info, callback) ->
+      info.status = convertStatus.finished
+      info.save().success ->
+        console.log('Finished.')
   ], (err) ->
     console.log(err) if err
     return
