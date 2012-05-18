@@ -89,7 +89,15 @@ app.post '/ticket', (req, res) ->
 app.get '/progress/:ticketCode', (req, res) ->
   result = ConvertInformation.find({where: {ticketCode: req.params.ticketCode}})
   result.success (info) ->
-    json = { status: info.status, percentage: 80 }
+    switch info.status
+      when convertStatus.waiting
+        json = { status: info.status }
+      when convertStatus.processing
+        json = { status: info.status }
+      when convertStatus.finished
+        json = { status: info.status, path:info.pubFile }
+      else
+        callback('unexpected status')
     res.send(json)
   result.error () ->
     json = { status: 'RecordNotFound' }
