@@ -39,22 +39,22 @@ app.post '/ticket', (req, res) ->
       srcFilePath = util.format(filePath.src, hashedFileName)
       dstFilePath = util.format(filePath.dst, hashedFileName)
       pubFilePath = util.format(filePath.pub, hashedFileName)
-      convertInformation = ConvertInformation.build
+      info = ConvertInformation.build
         status: convertStatus.waiting
         ticketCode: ticketCode
         fileName: fileName
         srcFile:  srcFilePath
         dstFile:  dstFilePath
         pubFile:  pubFilePath
-      convertInformation.save().success ->
+      info.save().success ->
         res.send({status:'OK', ticketCode: ticketCode})
-        callback(null, convertInformation)
+        callback(null, info)
         return
       return
-    , (convInfo, callback) ->
+    , (info, callback) ->
       console.log('start file encoding..')
-      inputStream = fs.createReadStream(convInfo.srcFile)
-      outputStream = fs.createWriteStream(convInfo.dstFile)
+      inputStream = fs.createReadStream(info.srcFile)
+      outputStream = fs.createWriteStream(info.dstFile)
       processor = ffmpeg.createProcessor({
         inputStream: inputStream,
         outputStream: outputStream,
@@ -83,8 +83,8 @@ app.post '/ticket', (req, res) ->
 
 app.get '/progress/:ticketCode', (req, res) ->
   result = ConvertInformation.find({where: {ticketCode: req.params.ticketCode}})
-  result.success (convertInformation) ->
-    json = { status: convertInformation.status, percentage: 80 }
+  result.success (info) ->
+    json = { status: info.status, percentage: 80 }
     res.send(json)
   result.error () ->
     json = { status: 'RecordNotFound' }
