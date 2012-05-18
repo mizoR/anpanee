@@ -6,6 +6,7 @@ module.exports =
     waiting:     'Waiting'
     processing:  'Processing'
     finished:    'Finished'
+    error:       'Error'
   FilePath:
     src: './tmp/src/%s.mp4'
     dst: './tmp/dst/%s.m4a'

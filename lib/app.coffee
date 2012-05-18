@@ -20,12 +20,14 @@ app.get '/', (req,res) ->
 app.post '/ticket', (req, res) ->
   async.waterfall [
     (callback) ->
+      # アップロードデータパース
       parser = new UploadedFileParser
       parser.parse req, (name, binary) ->
         callback(null, name, binary)
         return
       return
     , (name, binary, callback) ->
+      #  変換チケット生成
       date = new Date
       rand = Math.random().toString()
       ticketCode = md5.digestHex(date + rand)
@@ -36,6 +38,7 @@ app.post '/ticket', (req, res) ->
         callback(null, ticketCode, name, hashedFileName)
       )
     , (ticketCode, fileName, hashedFileName, callback) ->
+      #  変換チケット保存
       srcFilePath = util.format(filePath.src, hashedFileName)
       dstFilePath = util.format(filePath.dst, hashedFileName)
       pubFilePath = util.format(filePath.pub, hashedFileName)
@@ -52,10 +55,12 @@ app.post '/ticket', (req, res) ->
         return
       return
     , (info, callback) ->
+      #  変換ステータス変更
       info.status = convertStatus.processing
       info.save().success ->
         callback(null, info)
     , (info, callback) ->
+      #  変換処理
       inputStream = fs.createReadStream(info.srcFile)
       outputStream = fs.createWriteStream(info.dstFile)
       processor = ffmpeg.createProcessor({
@@ -73,16 +78,25 @@ app.post '/ticket', (req, res) ->
       processor.on 'failure', (retcode, signal) ->
         callback('process failure')
       processor.on 'timeout', (processor) ->
-        processor.terminate();
-        callback('timeout error');
+        processor.terminate()
+        callback('timeout error')
       processor.execute()
       return
+    , (info, callback) ->
+      # 公開ファイルの保存
+      fs.rename info.dstFile, info.pubFile, (err) ->
+        callback(err) if err
+        callback(null, info)
     , (info, callback) ->
       info.status = convertStatus.finished
       info.save().success ->
         console.log('Finished.')
-  ], (err) ->
+  ], (err, info) ->
     console.log(err) if err
+    if info
+      info.status = convertStatus.error
+      info.save().success ->
+        console.log('Saved error status')
     return
   return
 

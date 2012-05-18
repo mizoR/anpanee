@@ -3,5 +3,6 @@
 /db/*.sqlite3
 /npm-debug.log
 /output
+/public
 /lib/*.js
 /lib/**/*.js
