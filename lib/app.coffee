@@ -1,18 +1,19 @@
 #!/bin/env coffee
 
+fs      = require 'fs'
+util    = require 'util'
+async   = require 'async'
+config  = require 'config'
+ffmpeg  = require 'basicFFmpeg'
 express = require 'express'
-async = require 'async'
-fs = require 'fs'
-ffmpeg = require 'basicFFmpeg'
-md5 = require './libs/md5'
-util = require 'util'
-config = require 'config'
-convertStatus = config.ConvertStatus
-filePath = config.FilePath
-
-app = express.createServer()
+md5     = require './libs/md5'
 ConvertInformation = require './models/convert_information'
 UploadedFileParser = require './libs/uploaded_file_parser'
+
+convertStatus = config.ConvertStatus
+filePath      = config.FilePath
+
+app = express.createServer()
 
 app.get '/', (req,res) ->
   res.send 'Hello World'
