@@ -19,7 +19,7 @@ app.get '/', (req,res) ->
   res.send { status: 'ServerListened' }
   return
 
-app.post '/ticket', (req, res) ->
+app.post '/', (req, res) ->
   async.waterfall [
     (callback) ->
       # アップロードデータパース
