@@ -25,6 +25,9 @@ module.exports = class UploadedFileParser
       while i < raw.length
         body += raw.toString('binary', i, raw.length)
         i = raw.length
+      return
     req.on 'end', () ->
       body = body.slice(0, body.length - (boundary.length + 8))
       success(name, body)
+      return
+    return
