@@ -33,10 +33,13 @@ app.post '/ticket', (req, res) ->
       ticketCode = md5.digestHex(date + rand)
       hashedFileName = md5.digestHex(ticketCode + rand)
       srcFilePath = util.format(filePath.src, hashedFileName)
-      fs.writeFile(srcFilePath, binary, 'binary', (err) ->
-        callback(err) if err
-        callback(null, ticketCode, name, hashedFileName)
-      )
+      fs.writeFile srcFilePath, binary, 'binary', (err) ->
+        if err
+          callback(err)
+        else
+          callback(null, ticketCode, name, hashedFileName)
+        return
+      return
     , (ticketCode, fileName, hashedFileName, callback) ->
       #  変換チケット保存
       srcFilePath = util.format(filePath.src, hashedFileName)
@@ -59,6 +62,8 @@ app.post '/ticket', (req, res) ->
       info.status = convertStatus.processing
       info.save().success ->
         callback(null, info)
+        return
+      return
     , (info, callback) ->
       #  変換処理
       inputStream = fs.createReadStream(info.srcFile)
@@ -75,28 +80,39 @@ app.post '/ticket', (req, res) ->
       })
       processor.on 'success', (retcode, signal) ->
         callback(null, info)
+        return
       processor.on 'failure', (retcode, signal) ->
         callback('process failure')
+        return
       processor.on 'timeout', (processor) ->
         processor.terminate()
         callback('timeout error')
+        return
       processor.execute()
       return
     , (info, callback) ->
       # 公開ファイルの保存
       fs.rename info.dstFile, info.pubFile, (err) ->
-        callback(err) if err
-        callback(null, info)
+        if err
+          callback(err)
+        else
+          callback(null, info)
+        return
+      return
     , (info, callback) ->
       info.status = convertStatus.finished
       info.save().success ->
         console.log('Finished.')
+        return
+      return
   ], (err, info) ->
-    console.log(err) if err
-    if info
+    if err
+      console.log(err)
+    else
       info.status = convertStatus.error
       info.save().success ->
         console.log('Saved error status')
+        return
     return
   return
 
@@ -110,12 +126,14 @@ app.get '/progress/:ticketCode', (req, res) ->
         json = { status: info.status }
       when convertStatus.finished
         json = { status: info.status, path:info.pubFile }
-      else
-        callback('unexpected status')
+      when convertStatus.error
+        json = { status: info.error }
     res.send(json)
+    return
   result.error () ->
     json = { status: 'RecordNotFound' }
     res.send(json)
+    return
 
 app.listen 3000
 
