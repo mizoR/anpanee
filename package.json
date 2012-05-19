@@ -1,29 +1,28 @@
 {
+  "author": "ryutaro mizokami <suzunatsu@yahoo.com>",
   "name": "anpanee",
-  "description": "",
-  "version": "0.0.1",
-  "keywords": [],
-  "author": "mizoR <suzunatsu@yahoo.com>",
-  "homepage": "http://mizoR.github.com/",
-  "licenses": [{
-    "type": "MIT",
-  }],
+  "description": "Server for Audio Conversion.",
+  "version": "0.0.0",
+  "homepage": "https://github.com/mizoR/anpanee",
   "repository": {
     "type": "git",
     "url": "git://github.com/mizoR/anpanee.git"
   },
-  "main": "./lib/anpanee",
-  "bin": {
-    "anpanee": "./bin/anpanee"
-  },
+  "main": "./lib/app.coffee",
   "dependencies": {
-    "express": ">= 2.5.0",
-    "crypto": ">=0.0.3",
-    "coffee-script": ">= 1.3.1",
-    "sequelize": ">= 1.4.0",
-    "sqlite3": ">= 2.1.0"
+    "async": "0.1.18",
+    "basicFFmpeg": "0.0.7",
+    "coffee-script": "1.3.1",
+    "config": "0.4.13",
+    "crypto": "0.0.3"
+    "express": "2.5.8",
+    "sequelize": "1.4.0",
+    "util": "0.4.9",
+    "sqlite3": "2.1.3",
   },
   "devDependencies": {},
   "optionalDependencies": {},
-  "engines": {}
+  "engines": {
+    "node": "*"
+  }
 }
