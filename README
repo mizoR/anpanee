@@ -1,0 +1,12 @@
+INSTALL
+  $ git clone git://github.com/mizoR/anpanee.git
+  $ npm install
+  $ mkdir -p db public tmp/src tmp/dst
+START
+  $ ./bin/anpanee
+REQUEST and RESPONSE example
+  $ curl -F 'video=@video.mp4' 'http://localhost:3000/'
+  // { "status":"OK", "ticketCode":"xxxxxxxxx" }
+  $ curl 'http://localhost:3000/progress/xxxxxxxxxx'
+  // { "status":"Progressing" }
+
