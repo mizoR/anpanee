@@ -12,6 +12,7 @@ UploadedFileParser = require './libs/uploaded_file_parser'
 
 convertStatus = config.ConvertStatus
 filePath      = config.FilePath
+fileValid     = config.FileValid
 
 app = express.createServer()
 
@@ -30,6 +31,9 @@ app.post '/', (req, res) ->
       return
     , (name, binary, callback) ->
       #  変換チケット生成
+      if binary.length >= fileValid.maxSize
+        callback('Uploaded file size is so large.')
+        return
       date = new Date
       rand = Math.random().toString()
       ticketCode = md5.digestHex(date + rand)
