@@ -50,14 +50,12 @@ app.post '/', (req, res) ->
       #  変換チケット保存
       srcFilePath = util.format(filePath.src, hashedFileName)
       dstFilePath = util.format(filePath.dst, hashedFileName)
-      pubFilePath = util.format(filePath.pub, hashedFileName)
       info = ConvertInformation.build
         status: convertStatus.waiting
         ticketCode: ticketCode
         fileName: fileName
         srcFile:  srcFilePath
         dstFile:  dstFilePath
-        pubFile:  pubFilePath
       info.save().success ->
         res.send({status:'OK', ticketCode: ticketCode})
         callback(null, info)
@@ -97,15 +95,6 @@ app.post '/', (req, res) ->
       processor.execute()
       return
     , (info, callback) ->
-      # 公開ファイルの保存
-      fs.rename info.dstFile, info.pubFile, (err) ->
-        if err
-          callback(err)
-        else
-          callback(null, info)
-        return
-      return
-    , (info, callback) ->
       info.status = convertStatus.finished
       info.save().success ->
         console.log('Finished.')
@@ -131,7 +120,7 @@ app.get '/progress/:ticketCode', (req, res) ->
       when convertStatus.processing
         json = { status: info.status }
       when convertStatus.finished
-        json = { status: info.status, path:info.pubFile }
+        json = { status: info.status }
       when convertStatus.error
         json = { status: info.error }
     res.send(json)
@@ -142,5 +131,26 @@ app.get '/progress/:ticketCode', (req, res) ->
     return
   return
 
+app.get '/audio/:ticketCode', (req, res) ->
+  result = ConvertInformation.find({where: {ticketCode: req.params.ticketCode, status: convertStatus.finished}})
+  result.success (info) ->
+    console.log(info)
+    unless info
+      # 404 not found
+      console.log('AudioNotFound')
+      res.send('AudioNotFound', 404)
+      return
+    fs.readFile info.dstFile, (err, binary) ->
+      if err
+        console.log(err)
+        res.send(err, 'Server Error', 500)
+        return
+      else
+        res.send(binary, {'Content-Type': 'audio/mp4'}, 200)
+        return
+      return
+    return
+  return
+  
 app.listen 3000
 

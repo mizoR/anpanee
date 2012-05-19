@@ -16,7 +16,6 @@ module.exports = ConvertInformation = sequelize.define 'ConvertInformation',
   fileName: { type: Sequelize.STRING, allowNull: false }
   srcFile: { type: Sequelize.STRING, allowNull: true, unique: true }
   dstFile: { type: Sequelize.STRING, allowNull: true, unique: true }
-  pubFile: { type: Sequelize.STRING, allowNull: true, unique: true }
 
 sequelize.sync()
 
