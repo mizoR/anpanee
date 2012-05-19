@@ -16,7 +16,8 @@ filePath      = config.FilePath
 app = express.createServer()
 
 app.get '/', (req,res) ->
-  res.send 'Hello World'
+  res.send { status: 'ServerListened' }
+  return
 
 app.post '/ticket', (req, res) ->
   async.waterfall [
