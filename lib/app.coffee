@@ -140,6 +140,7 @@ app.get '/progress/:ticketCode', (req, res) ->
     json = { status: 'RecordNotFound' }
     res.send(json)
     return
+  return
 
 app.listen 3000
 
