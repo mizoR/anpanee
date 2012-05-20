@@ -48,14 +48,12 @@ app.post '/', (req, res) ->
       return
     , (ticketCode, fileName, hashedFileName, callback) ->
       #  変換チケット保存
-      srcFilePath = util.format(filePath.src, hashedFileName)
-      dstFilePath = util.format(filePath.dst, hashedFileName)
       info = ConvertInformation.build
         status: convertStatus.waiting
         ticketCode: ticketCode
         fileName: fileName
-        srcFile:  srcFilePath
-        dstFile:  dstFilePath
+        srcFile:  util.format(filePath.src, hashedFileName)
+        dstFile:  util.format(filePath.dst, hashedFileName)
       info.save().success ->
         res.send({status:'OK', ticketCode: ticketCode})
         callback(null, info)
@@ -70,11 +68,9 @@ app.post '/', (req, res) ->
       return
     , (info, callback) ->
       #  変換処理
-      inputStream = fs.createReadStream(info.srcFile)
-      outputStream = fs.createWriteStream(info.dstFile)
       processor = ffmpeg.createProcessor({
-        inputStream: inputStream,
-        outputStream: outputStream,
+        inputStream:  fs.createReadStream(info.srcFile),
+        outputStream: fs.createWriteStream(info.dstFile),
         emitInputAudioCodecEvent: true,
         emitInfoEvent: true,
         emitProgressEvent: true,
