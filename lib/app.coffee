@@ -54,16 +54,24 @@ app.post '/', (req, res) ->
         fileName: fileName
         srcFile:  util.format(filePath.src, hashedFileName)
         dstFile:  util.format(filePath.dst, hashedFileName)
-      info.save().success ->
+      result = info.save()
+      result.success ->
         res.send({status:'OK', ticketCode: ticketCode})
         callback(null, info)
+        return
+      result.error ->
+        callback('ticket creation error')
         return
       return
     , (info, callback) ->
       #  変換ステータス変更
       info.status = convertStatus.processing
-      info.save().success ->
+      result = info.save()
+      result.success ->
         callback(null, info)
+        return
+      result.error ->
+        callback('status change error (to "Processing")')
         return
       return
     , (info, callback) ->
@@ -92,17 +100,25 @@ app.post '/', (req, res) ->
       return
     , (info, callback) ->
       info.status = convertStatus.finished
-      info.save().success ->
-        console.log('Finished.')
+      result = info.save()
+      result.success ->
+        return
+      result.error ->
+        callback('status change error (to "Finish")')
         return
       return
   ], (err, info) ->
     if err
       console.log(err)
+      return
     else
       info.status = convertStatus.error
-      info.save().success ->
-        console.log('Saved error status')
+      result = info.save()
+      result.success ->
+        console.log('status change success (to "Error")')
+        return
+      result.error ->
+        console.log('status change error (to "Error")')
         return
     return
   return
@@ -130,10 +146,8 @@ app.get '/progress/:ticketCode', (req, res) ->
 app.get '/audio/:ticketCode', (req, res) ->
   result = ConvertInformation.find({where: {ticketCode: req.params.ticketCode, status: convertStatus.finished}})
   result.success (info) ->
-    console.log(info)
     unless info
       # 404 not found
-      console.log('AudioNotFound')
       res.send('AudioNotFound', 404)
       return
     fs.readFile info.dstFile, (err, binary) ->
