@@ -32,7 +32,7 @@ app.post '/', (req, res) ->
     , (name, binary, callback) ->
       #  変換チケット生成
       if binary.length >= fileValid.maxSize
-        callback('Uploaded file size is so large.')
+        callback('File upload error.(too large)')
         return
       date = new Date
       rand = Math.random().toString()
@@ -60,7 +60,7 @@ app.post '/', (req, res) ->
         callback(null, info)
         return
       result.error ->
-        callback('ticket creation error')
+        callback('Database error.(cannot save ticketCode)')
         return
       return
     , (info, callback) ->
@@ -71,7 +71,7 @@ app.post '/', (req, res) ->
         callback(null, info)
         return
       result.error ->
-        callback('status change error (to "Processing")')
+        callback('Database error.(to "Processing")')
         return
       return
     , (info, callback) ->
@@ -90,11 +90,11 @@ app.post '/', (req, res) ->
         callback(null, info)
         return
       processor.on 'failure', (retcode, signal) ->
-        callback('process failure')
+        callback('FFmpeg error.(process failure)')
         return
       processor.on 'timeout', (processor) ->
         processor.terminate()
-        callback('timeout error')
+        callback('FFmpeg error.(timeout error)')
         return
       processor.execute()
       return
@@ -104,7 +104,7 @@ app.post '/', (req, res) ->
       result.success ->
         return
       result.error ->
-        callback('status change error (to "Finish")')
+        callback('Database error.(to "Finish")')
         return
       return
   ], (err, info) ->
@@ -115,10 +115,9 @@ app.post '/', (req, res) ->
       info.status = convertStatus.error
       result = info.save()
       result.success ->
-        console.log('status change success (to "Error")')
         return
       result.error ->
-        console.log('status change error (to "Error")')
+        console.log('Database error.(to "Error")')
         return
     return
   return
