@@ -13,7 +13,7 @@ module.exports = ConvertInformation = sequelize.define 'ConvertInformation',
   id: { type: Sequelize.INTEGER, allowNull: false, autoIncrement: true, defaultValue: 1 }
   status: { type: Sequelize.STRING, allowNull: false }
   ticketCode: { type: Sequelize.STRING, allowNull: false, unique: true }
-  fileName: { type: Sequelize.STRING, allowNull: false }
+  fileName: { type: Sequelize.STRING, allowNull: true }
   srcFile: { type: Sequelize.STRING, allowNull: true, unique: true }
   dstFile: { type: Sequelize.STRING, allowNull: true, unique: true }
 

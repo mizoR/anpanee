@@ -2,7 +2,6 @@
 
 module.exports = class UploadedFileParser
   parse:(req, success) ->
-    error = @error
     headerFlag = true
     header = ''
     body = ''

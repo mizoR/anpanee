@@ -3,7 +3,7 @@ module.exports =
     filePath: './db/development.sqlite3'
     type: 'sqlite'
   ConvertStatus:
-    waiting:     'Waiting'
+    preparing:   'Preparing'
     processing:  'Processing'
     finished:    'Finished'
     error:       'Error'
