@@ -109,8 +109,6 @@ app.post '/', (req, res) ->
         result.error ->
           console.log('Database error.(to "Error")')
           return
-      else
-        console.log('Finished')
       return
     return
   return
