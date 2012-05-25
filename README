@@ -7,6 +7,8 @@ START
 REQUEST and RESPONSE example
   $ curl -F 'video=@video.mp4' 'http://localhost:3000/'
   // { "status":"OK", "ticketCode":"xxxxxxxxx" }
-  $ curl 'http://localhost:3000/progress/xxxxxxxxxx'
+  $ curl 'http://localhost:3000/tickets/xxxxxxxxxx/progress'
   // { "status":"Progressing" }
+  $ curl 'http://localhost:3000/tickets/xxxxxxxxxx/audio.m4a'
+  // audio binary data
 

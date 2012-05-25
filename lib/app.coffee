@@ -113,7 +113,7 @@ app.post '/', (req, res) ->
     return
   return
   
-app.get '/progress/:ticketCode', (req, res) ->
+app.get '/tickets/:ticketCode/progress', (req, res) ->
   result = ConvertInformation.find({where: {ticketCode: req.params.ticketCode}})
   result.success (info) ->
     switch info.status
@@ -133,7 +133,7 @@ app.get '/progress/:ticketCode', (req, res) ->
     return
   return
 
-app.get '/audio/:ticketCode', (req, res) ->
+app.get '/tickets/:ticketCode/audio.m4a', (req, res) ->
   result = ConvertInformation.find({where: {ticketCode: req.params.ticketCode, status: convertStatus.finished}})
   result.success (info) ->
     unless info
