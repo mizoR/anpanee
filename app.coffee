@@ -6,9 +6,9 @@ async   = require 'async'
 config  = require 'config'
 ffmpeg  = require 'basicFFmpeg'
 express = require 'express'
-md5     = require './libs/md5'
+md5     = require './lib/md5'
 ConvertInformation = require './models/convert_information'
-UploadedFileParser = require './libs/uploaded_file_parser'
+UploadedFileParser = require './lib/uploaded_file_parser'
 
 convertStatus = config.ConvertStatus
 filePath      = config.FilePath
