@@ -46,11 +46,11 @@ app.post '/', (req, res) ->
       , (info, callback) ->
         #  変換チケット生成
         if binary.length >= fileValid.maxSize
-          callback('File upload error.(too large)')
+          callback('File upload error.(too large)', info)
           return
         fs.writeFile info.srcFile, binary, 'binary', (err) ->
           if err
-            callback(err)
+            callback(err, info)
           else
             callback(null, info)
           return
@@ -63,7 +63,7 @@ app.post '/', (req, res) ->
           callback(null, info)
           return
         result.error ->
-          callback('Database error.(to "Processing")')
+          callback('Database error.(to "Processing")', info)
           return
         return
       , (info, callback) ->
@@ -78,15 +78,17 @@ app.post '/', (req, res) ->
           timeout: 10 * 60 * 1000,
           arguments: { '-vn': null, '-ar': 44100, '-ab': '128k', '-acodec': 'libfaac', '-f': 'adts' }
         })
+        processor.on 'progress', (bytes) ->
+          return
         processor.on 'success', (retcode, signal) ->
           callback(null, info)
           return
         processor.on 'failure', (retcode, signal) ->
-          callback('FFmpeg error.(process failure)')
+          callback('FFmpeg error.(process failure)', info)
           return
         processor.on 'timeout', (processor) ->
           processor.terminate()
-          callback('FFmpeg error.(timeout error)')
+          callback('FFmpeg error.(timeout error)', info)
           return
         processor.execute()
         return
@@ -96,7 +98,7 @@ app.post '/', (req, res) ->
         result.success ->
           return
         result.error ->
-          callback('Database error.(to "Finish")')
+          callback('Database error.(to "Finish")', info)
           return
         return
     ], (err, info) ->
