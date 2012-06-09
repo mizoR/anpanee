@@ -40,17 +40,17 @@ app.post '/', (req, res) ->
           callback(null, info)
           return
         result.error ->
-          callback('Database error.(cannot save ticket code)')
+          callback(['Database error.(cannot save ticket code)', info])
           return
         return
       , (info, callback) ->
         #  変換チケット生成
         if binary.length >= fileValid.maxSize
-          callback('File upload error.(too large)', info)
+          callback(['File upload error.(too large)', info])
           return
         fs.writeFile info.srcFile, binary, 'binary', (err) ->
           if err
-            callback(err, info)
+            callback([err, info])
           else
             callback(null, info)
           return
@@ -63,7 +63,7 @@ app.post '/', (req, res) ->
           callback(null, info)
           return
         result.error ->
-          callback('Database error.(to "Processing")', info)
+          callback(['Database error.(to "Processing")', info])
           return
         return
       , (info, callback) ->
@@ -84,11 +84,11 @@ app.post '/', (req, res) ->
           callback(null, info)
           return
         processor.on 'failure', (retcode, signal) ->
-          callback('FFmpeg error.(process failure)', info)
+          callback(['FFmpeg error.(process failure)', info])
           return
         processor.on 'timeout', (processor) ->
           processor.terminate()
-          callback('FFmpeg error.(timeout error)', info)
+          callback(['FFmpeg error.(timeout error)', info])
           return
         processor.execute()
         return
@@ -98,12 +98,13 @@ app.post '/', (req, res) ->
         result.success ->
           return
         result.error ->
-          callback('Database error.(to "Finish")', info)
+          callback(['Database error.(to "Finish")', info])
           return
         return
-    ], (err, info) ->
-      if err
-        console.log(err)
+    ], (params) ->
+      [err, info] = params
+      console.log(err) if err
+      if info
         info.status = convertStatus.error
         result = info.save()
         result.success ->
@@ -126,7 +127,7 @@ app.get '/tickets/:ticketCode/progress', (req, res) ->
       when convertStatus.finished
         json = { status: info.status }
       when convertStatus.error
-        json = { status: info.error }
+        json = { status: info.status }
     res.send(json)
     return
   result.error () ->
